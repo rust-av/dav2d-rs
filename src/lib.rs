@@ -16,6 +16,7 @@ pub enum Error {
     InvalidArgument,
     NotEnoughMemory,
     UnsupportedBitstream,
+    NoSequenceHeader,
     UnknownError(i32),
 }
 
@@ -31,6 +32,7 @@ impl From<i32> for Error {
             DAV2D_ERR_INVAL => Error::InvalidArgument,
             DAV2D_ERR_NOMEM => Error::NotEnoughMemory,
             DAV2D_ERR_NOPROTOOPT => Error::UnsupportedBitstream,
+            DAV2D_ERR_NOENT => Error::NoSequenceHeader,
             _ => Error::UnknownError(err),
         }
     }
@@ -54,6 +56,7 @@ impl fmt::Display for Error {
             Error::InvalidArgument => write!(fmt, "Invalid argument"),
             Error::NotEnoughMemory => write!(fmt, "Not enough memory available"),
             Error::UnsupportedBitstream => write!(fmt, "Unsupported bitstream"),
+            Error::NoSequenceHeader => write!(fmt, "No sequence header found"),
             Error::UnknownError(err) => write!(fmt, "Unknown error {}", err),
         }
     }
@@ -535,6 +538,7 @@ unsafe extern "C" fn alloc_picture_callback<A: PictureAllocator>(
             Error::InvalidArgument => DAV2D_ERR_INVAL,
             Error::NotEnoughMemory => DAV2D_ERR_NOMEM,
             Error::UnsupportedBitstream => DAV2D_ERR_NOPROTOOPT,
+            Error::NoSequenceHeader => DAV2D_ERR_NOENT,
             Error::UnknownError(err) => {
                 assert!(err < 0);
                 err
