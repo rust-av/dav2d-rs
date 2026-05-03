@@ -1,0 +1,24 @@
+[package]
+name = "dav2d-sys"
+version = "0.1.0"
+authors = ["Luca Barbato <lu_zero@gentoo.org>"]
+license = "MIT"
+description = "FFI bindings to dav2d"
+repository = "https://github.com/rust-av/dav2d-rs"
+edition = "2021"
+readme = "../README.md"
+rust-version = "1.78"
+
+build = "build.rs"
+
+[build-dependencies]
+system-deps = "7"
+
+[dependencies]
+libc = "0.2"
+
+[features]
+
+[package.metadata.system-deps.dav2d]
+name = "dav2d"
+version = "0.1.0"

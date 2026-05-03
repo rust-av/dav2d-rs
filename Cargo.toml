@@ -1,0 +1,25 @@
+[package]
+authors = ["Luca Barbato <lu_zero@gentoo.org>"]
+description = "libdav2d bindings"
+edition = "2021"
+keywords = ["dav2d-rs","av2"]
+license = "MIT"
+name = "dav2d"
+readme = "README.md"
+repository = "https://github.com/rust-av/dav2d-rs"
+version = "0.1.0"
+rust-version = "1.78"
+
+[dependencies]
+bitflags = "2"
+dav2d-sys = { version = "0.1.0", path = "dav2d-sys" }
+av-data = "0.4.2"
+static_assertions = "1"
+
+[dev-dependencies]
+bitstream-io = "4.0"
+
+[features]
+
+[workspace]
+members = ["dav2d-sys"]

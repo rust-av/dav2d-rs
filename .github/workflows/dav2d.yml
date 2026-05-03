@@ -1,0 +1,102 @@
+name: dav2d
+
+on: [push, pull_request]
+
+jobs:
+
+  linux-tests:
+
+    runs-on: ubuntu-22.04
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install nasm
+      uses: ilammy/setup-nasm@v1
+
+    - name: Install Rust stable
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: stable
+
+    - name: Install Python 3.9
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install pip packages
+      run: |
+        pip install -U pip
+        pip install -U wheel setuptools
+        pip install -U meson ninja
+
+    - name: Build dav2d
+      env:
+        DAV2D_DIR: dav2d_dir
+        LIB_PATH: lib/x86_64-linux-gnu
+      run: |
+        git clone --branch 0.1.0 --depth 1 https://code.videolan.org/videolan/dav2d.git
+        cd dav2d
+        meson build -Dprefix=$HOME/$DAV2D_DIR -Denable_tools=false -Denable_examples=false --buildtype release
+        ninja -C build
+        ninja -C build install
+        echo "PKG_CONFIG_PATH=$HOME/$DAV2D_DIR/$LIB_PATH/pkgconfig" >> $GITHUB_ENV
+        echo "LD_LIBRARY_PATH=$HOME/$DAV2D_DIR/$LIB_PATH" >> $GITHUB_ENV
+
+    - name: Run tests
+      run: |
+        cargo test --workspace --all-features
+
+  windows-tests-msvc:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: ilammy/msvc-dev-cmd@v1
+
+    - name: Install nasm
+      uses: ilammy/setup-nasm@v1
+
+    - name: Install Rust stable MSVC
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: stable-x86_64-pc-windows-msvc
+
+    - name: Install Python 3.9
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install pip packages
+      run: |
+        pip install -U pip
+        pip install -U wheel setuptools
+        pip install -U meson ninja
+
+    - name: Setting up environment
+      shell: bash
+      run: |
+        echo "PKG_CONFIG=c:\build\bin\pkg-config.exe" >> $GITHUB_ENV
+        echo "PKG_CONFIG_PATH=C:\build\lib\pkgconfig" >> $GITHUB_ENV
+        echo "C:\build\bin" >> $GITHUB_PATH
+
+    - name: Build pkg-config
+      run: |
+        git clone --branch meson-glib-subproject --depth 1 https://gitlab.freedesktop.org/tpm/pkg-config.git
+        cd pkg-config
+        meson build -Dprefix=C:\build --buildtype release
+        ninja -C build
+        ninja -C build install
+
+    - name: Build dav2d
+      run: |
+        git clone --branch 0.1.0 --depth 1 https://code.videolan.org/videolan/dav2d.git
+        cd dav2d
+        meson build -Dprefix=C:\build -Denable_tools=false -Denable_examples=false --buildtype release
+        ninja -C build
+        ninja -C build install
+
+    - name: Run tests
+      run: |
+        cargo test --workspace --all-features
